@@ -1,0 +1,18 @@
+/* layout.css */
+.header {
+  background-color: var(--header-bg);
+  padding: 1rem;
+}
+
+.sidebar {
+  background-color: var(--sidebar-bg);
+  width: 250px;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.main {
+  background-color: var(--main-bg);
+  flex: 1;
+  padding: 1rem;
+}
