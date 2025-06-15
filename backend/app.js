@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const mongoose = require('mongoose');
+const { poolPromise } = require('./db');
 
 require('dotenv').config();
 const port = process.env.port || 5000;
@@ -17,8 +18,10 @@ app.use("/api/login", require("./routes/login"));
 app.use("/api/refreshtoken", require("./routes/refreshtoken"));
 
 
-app.get('/',(req,res)=>
+app.get('/', async (req,res)=>
     {res.send('hello world!'); 
+
+
     });
 
     app.listen(port,() => {
