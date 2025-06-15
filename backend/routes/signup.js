@@ -1,8 +1,10 @@
 
 const router = require("express").Router();
 const { jsonResponse } = require("../lib/jsonresponse");
+const bcrypt = require("bcrypt");
+const { poolPromise, sql } = require("../db");
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
     const { name,email,Lastname,Username, Password,FechaNac,PasswordConfirm,sexo } = req.body;
 
     if (!!!name || !!!email || !!!Lastname || !!!Username || !!!Password || !!!FechaNac || !!!PasswordConfirm || !!!sexo) {
@@ -25,10 +27,39 @@ router.post("/", (req, res) => {
         return res.status(400).json(jsonResponse(400,{error:"el correo electrónico no es válido"}));
     }
 
-    res.status(200).json(jsonResponse(200,{message:"Usuario registrado correctamente"}));
+    try {
+        const pool = await poolPromise;
 
+        // Verifica si el username o email ya existen
+        const checkUser = await pool.request()
+            .input("Username", sql.NVarChar, Username)
+            .input("Email", sql.NVarChar, email)
+            .query("SELECT * FROM Usuarios WHERE Username = @Username OR Email = @Email");
 
-    res.send("Signup");
+        if (checkUser.recordset.length > 0) {
+            return res.status(400).json(jsonResponse(400, { error: "El usuario o correo ya está registrado" }));
+        }
+
+        const hashedPassword = await bcrypt.hash(Password, 10);
+
+        await pool.request()
+            .input("Name", sql.NVarChar, name)
+            .input("Lastname", sql.NVarChar, Lastname)
+            .input("Username", sql.NVarChar, Username)
+            .input("Password", sql.NVarChar, hashedPassword)
+            .input("FechaNac", sql.Date, FechaNac)
+            .input("Email", sql.NVarChar, email)
+            .input("Sexo", sql.Char, sexo)
+            .query(`
+                INSERT INTO Usuarios (Name, Lastname, Username, Password, FechaNac, Email, Sexo)
+                VALUES (@Name, @Lastname, @Username, @Password, @FechaNac, @Email, @Sexo)
+            `);
+
+        return res.status(200).json(jsonResponse(200, { message: "Usuario registrado correctamente" }));
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json(jsonResponse(500, { error: "Error del servidor" }));
+    }
 });
 
 module.exports = router;

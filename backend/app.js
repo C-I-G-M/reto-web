@@ -21,7 +21,6 @@ app.use("/api/refreshtoken", require("./routes/refreshtoken"));
 app.get('/', async (req,res)=>
     {res.send('hello world!'); 
 
-
     });
 
     app.listen(port,() => {
