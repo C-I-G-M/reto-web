@@ -3,7 +3,7 @@ import { useAuth } from "../Auth/AuthProvider";
 import DefaultLayout from "../layout/defaultlayout";
 import { useState } from "react";
 import { API_URL } from "../Auth/constants";
-import type { AuthResponseError } from "../types/types";
+import type { AuthResponse, AuthResponseError } from "../types/types";
 
 export default function Login(){
 
@@ -33,8 +33,15 @@ export default function Login(){
         if (response.ok) {
             console.log("Usuario validado exitosamente");
             setErrorResponse("");
+            const json = (await response.json()) as AuthResponse;
 
-            goTo("/");
+            if( json.body.accessToken && json.body.refreshToken){
+                auth.saveUser(json);
+                goTo("/Dashboard");
+            }
+           
+           
+            //goTo("/");
         }
         else {
             console.log("Algo salio mal al registrar el usuario");
