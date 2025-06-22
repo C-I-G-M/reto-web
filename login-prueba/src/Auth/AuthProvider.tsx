@@ -1,5 +1,6 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import type { AuthResponse } from "../types/types";
+import type { AccessTokenResponse, AuthResponse, User } from "../types/types";
+import { API_URL } from "./constants";
 interface AuthProviderProps{
     children: React.ReactNode;
 }
@@ -7,29 +8,142 @@ interface AuthProviderProps{
 const AuthContext = createContext({
 IsAuthenticated: false,
 getAccessToken: () => {},
-saveUser: (userData: AuthResponse) => {}
+saveUser: (userData: AuthResponse) => {},
+getRefreshToken: () => {},
+getUser: () => ({} as User | undefined),
+signOut: () => {},
 });
 export function AuthProvider({children}: AuthProviderProps){
 
     const[IsAuthenticated, SetIsAuthenticated] = useState(false);
     const [accessToken, setAccessToken] = useState<string>("");
-    const [refereshToken, setRefreshToken] = useState<string>("");
+    const [User, setUser] = useState<User>();
+ 
+    
+    useEffect(() => {CheckAuth();}, []);
+    async function requestNewAccessToken(refreshToken: string){
+        try {
+            console.log(refreshToken);
+            const response = await fetch(`${API_URL}/refreshtoken`,{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${refreshToken}`,
+                },
+             });
+
+             if (response.ok){
+                const json = await response.json() as AccessTokenResponse;
+
+                if (json.error){
+                    throw new Error(json.error);
+                }
+
+                return json.body.accessToken;
+
+             } else {
+                throw new Error (response.statusText);
+
+             }
+
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+        }
+
+    async function getUserInfo(accessToken: string) {
+
+        try {
+            
+            const response = await fetch(`${API_URL}/Users`,{
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                },
+             });
+
+             if (response.ok){
+                const json = await response.json();
+                console.log(json);
+                return json;
+
+             } else {
+                throw new Error (response.statusText);
+
+             }
+
+            } catch (error) {
+                console.log(error);
+                return null;
+            }
+    }
+
+    async function CheckAuth(){
+    if(accessToken){
+// el usuario esta autenticado
+    } else{
+        // el usuario no esta autenticado
+        const token = getRefreshToken();
+        if(token){
+            const newAccessToken = await requestNewAccessToken(token);
+            if(newAccessToken){
+                const userInfo = await getUserInfo(newAccessToken);
+                if(userInfo){
+                    saveSessionData(newAccessToken, userInfo, token);
+
+                } 
+            } 
+        }
+
+    }
+        
+}
+
+function saveSessionData(
+    accessToken: string,
+     userInfo: User,
+      refreshToken: string) {
+        setAccessToken(accessToken);
+    localStorage.setItem("Token", JSON.stringify(refreshToken));
+    SetIsAuthenticated(true);
+    setUser(userInfo);
+}
+
+function signOut() {
+    localStorage.removeItem("Token");
+    setAccessToken("");
+    setUser(undefined);
+    SetIsAuthenticated(false);
+}
 
     function getAccessToken() {
         return accessToken;
 
     }
 
-    function saveUser(userData: AuthResponse){
-    setAccessToken(userData.body.accessToken);
-    setRefreshToken(userData.body.refreshToken);
+    function getRefreshToken(): string | null {
+        const tokenData = localStorage.getItem("Token");
+        if (tokenData) {
+            return JSON.parse(tokenData);
+        }
+        return null;
+    }
 
-    localStorage.setItem("Token", JSON.stringify(userData.body.refreshToken));
-    SetIsAuthenticated(true);
+    function saveUser(userData: AuthResponse){
+   saveSessionData(
+         userData.body.accessToken,
+         userData.body.user, 
+         userData.body.refreshToken);
 
     }
 
-    return (<AuthContext.Provider value={{IsAuthenticated, getAccessToken, saveUser}}>
+    function getUser(){
+        return User;
+    }
+
+    return (<AuthContext.Provider value={{IsAuthenticated, getAccessToken, saveUser, getRefreshToken, getUser, signOut }}>
         {children}
         </AuthContext.Provider>
     );

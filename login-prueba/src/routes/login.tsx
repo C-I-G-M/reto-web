@@ -66,7 +66,7 @@ export default function Login(){
 
     return(
         <DefaultLayout>
-        <form className="form" onSubmit={handlesubmit}>
+        <form className="form-container" onSubmit={handlesubmit}>
         <h1>Iniciar Sesion</h1>
         { !! errorResponse && <div className="errorMessage">{errorResponse}</div>}
         <label>Nombre de Usuario</label>
@@ -75,6 +75,17 @@ export default function Login(){
         <label>Contraseña</label>
         <input type="password" value={Password} onChange={(e)=> setPassword (e.target.value)}/>
         <button>Iniciar sesion</button>
+        {/* Enlace a registro */}
+        <p style={{ marginTop: "1rem" }}>
+          ¿Eres nuevo?{" "}
+          <span
+            style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
+            onClick={() => goTo("/signup")}
+          >
+            Regístrate aquí
+          </span>
+        </p>
+
         </form>
         </DefaultLayout>
    

@@ -83,3 +83,66 @@ a {
   padding: 10px;
 }
 
+.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+/* Estilo general claro */
+body {
+  background-color: #f5f5f5;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+/* Modo oscuro */
+.dark-mode body {
+  background-color: #121212;
+  color: #f5f5f5;
+}
+
+/* Inputs y botones */
+input, button {
+  transition: all 0.3s ease;
+}
+
+input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: black;
+}
+
+/* Inputs en modo oscuro */
+.dark-mode input {
+  background-color: #333;
+  border: 1px solid #666;
+  color: #f5f5f5;
+}
+
+/* Botones */
+button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* Botón modo oscuro */
+.dark-mode button {
+  background-color: #1a73e8;
+  color: #fff;
+}
+
+/* Mensajes de error */
+.errorMessage {
+  color: red;
+  margin-bottom: 1rem;
+}
+
+.dark-mode .errorMessage {
+  color: #ff6666;
+}
+
+

@@ -3,6 +3,7 @@ const cors = require('cors');
 const app = express();
 const mongoose = require('mongoose');
 const { poolPromise } = require('./db');
+const authenticate = require('./verificacion/verificacion');
 
 require('dotenv').config();
 const port = process.env.port || 5000;
@@ -12,8 +13,8 @@ app.use(express.json());
 
 app.use("/api/signup", require("./routes/signup"));
 app.use("/api/signout", require("./routes/signout"));
-app.use("/api/todos", require("./routes/todos"));
-app.use("/api/users", require("./routes/users"));
+app.use("/api/todos", authenticate, require("./routes/todos"));
+app.use("/api/users", authenticate, require("./routes/users"));
 app.use("/api/login", require("./routes/login"));
 app.use("/api/refreshtoken", require("./routes/refreshtoken"));
 

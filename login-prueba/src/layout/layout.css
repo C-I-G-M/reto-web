@@ -1,18 +1,31 @@
 /* layout.css */
-.header {
-  background-color: var(--header-bg);
+
+body {
+  background-color: white;
+  color: black;
+}
+
+header {
+  background-color: #f0f0f0;
   padding: 1rem;
 }
 
-.sidebar {
-  background-color: var(--sidebar-bg);
-  width: 250px;
-  min-height: 100vh;
-  padding: 1rem;
+/* Dark mode */
+.dark-mode body {
+  background-color: #121212;
+  color: white;
 }
 
-.main {
-  background-color: var(--main-bg);
-  flex: 1;
-  padding: 1rem;
+.dark-mode header {
+  background-color: #1e1e1e;
+}
+
+.dark-mode input,
+.dark-mode button {
+  background-color: #333;
+  color: white;
+}
+
+.dark-mode a {
+  color: #00aaff;
 }

@@ -23,3 +23,13 @@ export interface User {
   fechaNac: string;
   sexo: string;
 }
+
+export interface AccessTokenResponse {
+  statusCode: number;
+  body: {
+    accessToken: string;
+  },
+error?: string;
+
+
+}

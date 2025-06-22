@@ -5,6 +5,8 @@ import { Navigate, useNavigate} from "react-router-dom";
 import { API_URL } from "../Auth/constants";
 import type { AuthResponseError } from "../types/types";
 
+
+
 export default function Signup(){
     const [name, setName] = useState("");
      const [Username, setUserName] = useState("");
@@ -15,6 +17,49 @@ export default function Signup(){
       const [email, setEmail] = useState("");
       const [sexo,setSexo] = useState("");
       const [errorResponse, setErrorResponse] = useState("");
+      const [provinciaId, setProvinciaId] = useState("");
+
+      const provincias = [
+  { id: 24, nombre: "Azua" },
+  { id: 38, nombre: "La Vega" },
+  { id: 28, nombre: "Santo Domingo (Distrito Nacional)" },
+  { id: 52, nombre: "Santiago" },
+    { id: 47, nombre: "San Cristóbal" },
+    { id: 49, nombre: "San Juan" },
+    { id: 50, nombre: "San Pedro de Macorís" },
+    { id: 55, nombre: "San Francisco de Macorís" },
+    { id: 45, nombre: "Puerto Plata" },
+    { id: 33, nombre: "Hato Mayor" },
+    { id: 31, nombre: "El Seibo" },
+    { id: 29, nombre: "Duarte" },
+    { id: 46, nombre: "Samaná" },
+    { id: 54, nombre: "Valverde" },
+    { id: 41, nombre: "Montecristi" },
+    { id: 26, nombre: "Barahona" },
+    { id: 44, nombre: "Peravia" },
+    { id: 42, nombre: "Monte Plata" },
+    { id: 48, nombre: "San José de Ocoa" },
+    { id: 51, nombre: "Sánchez Ramírez" },
+    { id: 36, nombre: "La Altagracia" },
+    { id: 27, nombre: "Dajabón" },
+    { id: 30, nombre: "Elías Piña" },
+    { id: 35, nombre: "Independencia" },
+    { id: 43, nombre: "Pedernales" },
+    { id: 53, nombre: "Santiago Rodríguez" },
+    { id: 25, nombre: "Bahoruco" },
+    { id: 37, nombre: "La Romana" },
+    { id: 39, nombre: "María Trinidad Sánchez" },
+    { id: 34, nombre: "Hermanas Mirabal" },
+    { id: 32, nombre: "Espaillat" },
+    { id: 40, nombre: "Monseñor Nouel" },
+
+
+  // Agrega todas las provincias que necesites
+];
+
+
+
+
 
       const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSexo(event.target.value);
@@ -38,7 +83,8 @@ export default function Signup(){
                 PasswordConfirm,
                 FechaNac,
                 email,
-                sexo
+                sexo,
+                provinciaId 
 
             }),
         });
@@ -66,7 +112,7 @@ export default function Signup(){
 
     return(
         <DefaultLayout>
-    <form className="form" onSubmit={handlesubmit}>
+    <form className="form-container" onSubmit={handlesubmit}>
         <h1>Registro</h1>
         { !! errorResponse && <div className="errorMessage">{errorResponse}</div>}
         <label>Nombre</label>
@@ -81,6 +127,16 @@ export default function Signup(){
         <input type="radio" name="myRadio" value="F" checked ={sexo === 'F'} onChange={handleChange}/>
           Femenino
             </p>
+
+            <label>Provincia</label>
+<select value={provinciaId} onChange={(e) => setProvinciaId(e.target.value)}>
+  <option value="">Seleccione una provincia</option>
+  {provincias.map((provincia) => (
+    <option key={provincia.id} value={provincia.id}>
+      {provincia.nombre}
+    </option>
+  ))}
+</select>
         <label>E-Mail</label>
         <input type="text" value={email} onChange={(e)=> setEmail(e.target.value)} />
 

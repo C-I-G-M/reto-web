@@ -1,37 +1,28 @@
-import'../layout/layout.css';
-import { Link } from "react-router-dom";
-import DarkModeToggle from "../layout/darkmode";
+
+import "../layout/layout.css";
+import Switch from '../components/boton';
 
 interface DefaultLayoutProps {
     children: React.ReactNode;
 }
-export default function DefaultLayout({children}: DefaultLayoutProps){
-return(
 
-    
-    <>
-    <header>
-        <nav>
-            <ul>
-                <li>
-                <Link to="/">Iniciar sesion</Link>
-                </li>
-                <li>
-                <Link to="/signup">Registro</Link>
-                </li>
-                <li>
-                <Link to="/dashboard">Pagina Principal</Link>
-                </li>
-                <DarkModeToggle />                
-            </ul>
-        </nav>
+export default function DefaultLayout({ children }: DefaultLayoutProps) {
+    return (
+        <>
+            <header className="header">
+                <nav className="navbar">
+                    <div className="nav-left">
+                    
+                    </div>
+                    <div className="nav-right">
+                        <Switch />
+                    </div>
+                </nav>
+            </header>
 
-    </header>
-
-    <main>
-        {children}
-    </main>
-    </>
-);
-
+            <main>
+                {children}
+            </main>
+        </>
+    );
 }

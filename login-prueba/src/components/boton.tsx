@@ -1,18 +1,36 @@
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const Switch = () => {
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
   return (
     <StyledWrapper>
       <label className="switch">
-        <input type="checkbox" />
+        <input
+          type="checkbox"
+          checked={isDark}
+          onChange={() => setIsDark(!isDark)}
+        />
         <span className="slider" />
       </label>
     </StyledWrapper>
   );
-}
+};
 
 const StyledWrapper = styled.div`
-  /* The switch - the box around the slider */
   .switch {
     font-size: 17px;
     position: relative;
@@ -21,14 +39,12 @@ const StyledWrapper = styled.div`
     height: 2em;
   }
 
-  /* Hide default HTML checkbox */
   .switch input {
     opacity: 0;
     width: 0;
     height: 0;
   }
 
-  /* The slider */
   .slider {
     --background: #28096b;
     position: absolute;
@@ -38,7 +54,7 @@ const StyledWrapper = styled.div`
     right: 0;
     bottom: 0;
     background-color: var(--background);
-    transition: .5s;
+    transition: 0.5s;
     border-radius: 30px;
   }
 
@@ -52,7 +68,7 @@ const StyledWrapper = styled.div`
     bottom: 15%;
     box-shadow: inset 8px -4px 0px 0px #fff000;
     background: var(--background);
-    transition: .5s;
+    transition: 0.5s;
   }
 
   input:checked + .slider {
@@ -62,6 +78,9 @@ const StyledWrapper = styled.div`
   input:checked + .slider:before {
     transform: translateX(100%);
     box-shadow: inset 15px -4px 0px 15px #fff000;
-  }`;
+  }
+`;
+
+// Global styles (add this in a separate file or in your root component)
 
 export default Switch;

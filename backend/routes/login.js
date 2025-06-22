@@ -25,8 +25,8 @@ router.post("/", async (req, res) => {
         const pool = await poolPromise;
 
         const result = await pool.request()
-            .input("Username", sql.NVarChar, Username)
-            .query("SELECT * FROM Usuarios WHERE Username = @Username");
+            .input("Nombre_de_Usuario", sql.VarChar, Username)
+            .query("SELECT * FROM Usuarios WHERE Nombre_de_Usuario = @Nombre_de_Usuario");
 
         if (result.recordset.length === 0) {
             return res.status(404).json(jsonResponse(404, { error: "Usuario no encontrado" }));
@@ -34,22 +34,32 @@ router.post("/", async (req, res) => {
 
         const userFromDb = result.recordset[0];
 
-        const passwordMatch = await bcrypt.compare(Password, userFromDb.Password);
+        const passwordMatch = await bcrypt.compare(Password, userFromDb.Contrasena);
 
         if (!passwordMatch) {
             return res.status(401).json(jsonResponse(401, { error: "Usuario o Contraseña incorrectos" }));
         }
 
         const payload = {
-            id: userFromDb.Id,
-            username: userFromDb.Username,
-            email: userFromDb.Email
+            id: userFromDb.ID_Usuario,
+            username: userFromDb.Nombre_de_Usuario,
         };
 
 
         // Generar tokens
         const accessToken = generateAccessToken(payload);
         const refreshToken = generateRefreshToken(payload);
+
+
+await pool.request()
+    .input("UserId", sql.Int, userFromDb.ID_Usuario)
+    .input("Token", sql.NVarChar(sql.MAX), refreshToken)
+    .query(`
+        INSERT INTO RefreshTokens (UserId, Token)
+        VALUES (@UserId, @Token)
+    `);
+        
+
 
         return res.status(200).json(jsonResponse(200, {
             user: payload,
@@ -58,10 +68,17 @@ router.post("/", async (req, res) => {
             message: "Usuario autenticado correctamente"
         }));
 
+        
+        
+
     } catch (error) {
         console.error("Error en login:", error);
         return res.status(500).json(jsonResponse(500, { error: "Error del servidor" }));
     }
+
+    
+    
+    
 });
 
 module.exports = router;

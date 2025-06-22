@@ -10,7 +10,7 @@ const config = {
   port: parseInt(process.env.DB_PORT),
   options: {
     encrypt: false, // true si usas Azure o certificado SSL
-    trustServerCertificate: true,
+    trustServerCertificate: false,
   },
 };
 

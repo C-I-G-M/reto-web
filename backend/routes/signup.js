@@ -5,9 +5,9 @@ const bcrypt = require("bcrypt");
 const { poolPromise, sql } = require("../db");
 
 router.post("/", async (req, res) => {
-    const { name,email,Lastname,Username, Password,FechaNac,PasswordConfirm,sexo } = req.body;
+    const { name,email,Lastname,Username, Password,FechaNac,PasswordConfirm,sexo, provinciaId } = req.body;
 
-    if (!!!name || !!!email || !!!Lastname || !!!Username || !!!Password || !!!FechaNac || !!!PasswordConfirm || !!!sexo) {
+    if (!!!name || !!!email || !!!Lastname || !!!Username || !!!Password || !!!FechaNac || !!!PasswordConfirm || !!!sexo || !!!provinciaId) {
         return res.status(400).json(jsonResponse(400,{error:"todos los campos son obligatorios"}));
     }
 
@@ -32,9 +32,9 @@ router.post("/", async (req, res) => {
 
         // Verifica si el username o email ya existen
         const checkUser = await pool.request()
-            .input("Username", sql.NVarChar, Username)
-            .input("Email", sql.NVarChar, email)
-            .query("SELECT * FROM Usuarios WHERE Username = @Username OR Email = @Email");
+            .input("Nombre_de_Usuario", sql.VarChar, Username)
+            .input("Email", sql.VarChar, email)
+            .query("SELECT * FROM Usuarios WHERE Nombre_de_Usuario = @Nombre_de_Usuario OR Email = @Email");
 
         if (checkUser.recordset.length > 0) {
             return res.status(400).json(jsonResponse(400, { error: "El usuario o correo ya está registrado" }));
@@ -43,17 +43,16 @@ router.post("/", async (req, res) => {
         const hashedPassword = await bcrypt.hash(Password, 10);
 
         await pool.request()
-            .input("Name", sql.NVarChar, name)
-            .input("Lastname", sql.NVarChar, Lastname)
-            .input("Username", sql.NVarChar, Username)
-            .input("Password", sql.NVarChar, hashedPassword)
-            .input("FechaNac", sql.Date, FechaNac)
-            .input("Email", sql.NVarChar, email)
-            .input("Sexo", sql.Char, sexo)
-            .query(`
-                INSERT INTO Usuarios (Name, Lastname, Username, Password, FechaNac, Email, Sexo)
-                VALUES (@Name, @Lastname, @Username, @Password, @FechaNac, @Email, @Sexo)
-            `);
+    .input("Nombre", sql.VarChar, name)
+    .input("Apellido", sql.VarChar, Lastname)
+    .input("Nombre_de_Usuario", sql.VarChar, Username)
+    .input("Contrasena", sql.VarChar, hashedPassword)
+    .input("FechaNac", sql.Date, FechaNac)
+    .input("Email", sql.VarChar, email)
+    .input("Sexo", sql.VarChar, sexo)
+    .input("ID_Provincia", sql.Int, provinciaId)
+    .execute("InsertarUsuario");
+
 
         return res.status(200).json(jsonResponse(200, { message: "Usuario registrado correctamente" }));
     } catch (error) {

@@ -1,29 +1,26 @@
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET || "secreto_super_seguro";
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "refresh_secreto_super_seguro";
+function sign(payload, isAccessToken){
+  return jwt.sign(
+    payload,
+    isAccessToken ? process.env.access_token_secret : process.env.refresh_token_secret,
+    {
+      algorithm: "HS256",
+      expiresIn: isAccessToken ? "15m" : "7d", // acceso 15 min, refresh 7 días
+    }
+  );
+}
 
-// Token válido por 15 minutos
 function generateAccessToken(user) {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: "15m" });
+  return sign({ user }, true);
 }
 
-// Token válido por 7 días
 function generateRefreshToken(user) {
-  return jwt.sign(user, JWT_REFRESH_SECRET, { expiresIn: "7d" });
-}
-
-function verifyAccessToken(token) {
-  return jwt.verify(token, JWT_SECRET);
-}
-
-function verifyRefreshToken(token) {
-  return jwt.verify(token, JWT_REFRESH_SECRET);
+  return sign({ user }, false);
 }
 
 module.exports = {
   generateAccessToken,
-  generateRefreshToken,
-  verifyAccessToken,
-  verifyRefreshToken,
+  generateRefreshToken
 };
+
