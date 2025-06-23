@@ -66,8 +66,8 @@ export function AuthProvider({children}: AuthProviderProps){
 
              if (response.ok){
                 const json = await response.json();
-                console.log(json);
-                return json;
+                console.log("User info recibido:", json.body);
+                return json.body; 
 
              } else {
                 throw new Error (response.statusText);

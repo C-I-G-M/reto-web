@@ -3,6 +3,7 @@ export interface AuthResponse {
     user: User;
     refreshToken: string;
     accessToken: string;
+    rol: string;
   };
 
 }
@@ -22,6 +23,7 @@ export interface User {
   email: string;
   fechaNac: string;
   sexo: string;
+  rol: string;
 }
 
 export interface AccessTokenResponse {

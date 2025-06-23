@@ -1,20 +1,15 @@
 function getTokenFromHeader(headers){
-if (headers && headers.authorization) {
-    const parted = headers.authorization.split(' ');
-    if (parted.length === 2 ) {
-        return parted[1];
+  const authHeader = headers['authorization'] || headers ['Authorization'] || '';
+
+if (typeof authHeader !== 'string') return null;
+
+  const parts = authHeader.split(' ');
+  if (parts.length === 2 && parts[0] === 'Bearer') {
+    return parts[1];
   }
 
-  else {
-    return null;
-  }
-
+  return null;
 }
 
-else {
-    return null;
-}
-
-}
 
 module.exports = getTokenFromHeader;

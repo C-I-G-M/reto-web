@@ -7,7 +7,7 @@ export default function Dashboard(){
     const auth = useAuth();
     return(
         <PortalLayout>
-         <h1>Dashboard de {auth.getUser()?.name || ""}</h1>
+         <h1>Dashboard de {auth.getUser()?.username || ""}</h1>
          </PortalLayout>
         );
 }

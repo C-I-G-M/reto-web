@@ -43,6 +43,7 @@ router.post("/", async (req, res) => {
         const payload = {
             id: userFromDb.ID_Usuario,
             username: userFromDb.Nombre_de_Usuario,
+            rol: userFromDb.Rol,
         };
 
 

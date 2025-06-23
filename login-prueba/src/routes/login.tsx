@@ -35,11 +35,18 @@ export default function Login(){
             setErrorResponse("");
             const json = (await response.json()) as AuthResponse;
 
-            if( json.body.accessToken && json.body.refreshToken){
+            if( json.body.accessToken && json.body.refreshToken ){
                 auth.saveUser(json);
-                goTo("/Dashboard");
+
+                  const rol = json.body.user.rol;
+
+             if (rol === "admin") {
+                  goTo("/AdminDashboard");
+
+             } else {
+              goTo("/Dashboard");
             }
-           
+            }
            
             //goTo("/");
         }
@@ -57,10 +64,10 @@ export default function Login(){
 
 
 
-      if (auth.IsAuthenticated){
-        return <Navigate to = "/Dashboard"/>
-
-      }
+    if (auth.IsAuthenticated){
+  const role = auth.getUser()?.rol;
+  return <Navigate to={role === "admin" ? "/AdminDashboard" : "/Dashboard"} />
+}
 
       
 

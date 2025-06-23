@@ -8,6 +8,7 @@ import Dashboard from './routes/Dashboard.tsx';
 import ProtectedRoute from './routes/protectedroute.tsx';
 import { AuthProvider } from './Auth/AuthProvider.tsx';
 import "./App.css";
+import AdminDashboard from './routes/AdminDashboard.tsx';
 
 
 const router = createBrowserRouter([
@@ -25,8 +26,13 @@ const router = createBrowserRouter([
       path:"/Dashboard",
       element:<Dashboard />
 
-    }]
-  }
+    },
+  {
+        path: "/AdminDashboard",
+        element: <AdminDashboard />,
+      },]
+  },
+
 ]);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
