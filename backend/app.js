@@ -17,6 +17,7 @@ app.use("/api/todos", authenticate, require("./routes/todos"));
 app.use("/api/users", authenticate, require("./routes/users"));
 app.use("/api/login", require("./routes/login"));
 app.use("/api/refreshtoken", require("./routes/refreshtoken"));
+app.use("/api/solicitudes" ,authenticate, require("./routes/solicitudes"));
 
 
 app.get('/', async (req,res)=>
