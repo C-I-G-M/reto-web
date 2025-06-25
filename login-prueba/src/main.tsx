@@ -5,10 +5,10 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Login from './routes/login.tsx';
 import Signup from './routes/signup.tsx';
 import Dashboard from './routes/Dashboard.tsx';
-import ProtectedRoute from './routes/protectedroute.tsx';
 import { AuthProvider } from './Auth/AuthProvider.tsx';
 import "./App.css";
 import AdminDashboard from './routes/AdminDashboard.tsx';
+import RoleProtectedRoute from './routes/RoleProtectedRoutes.tsx';
 
 
 const router = createBrowserRouter([
@@ -20,18 +20,26 @@ const router = createBrowserRouter([
     element:<Signup />
   },
 
-  {path:"/",
-    element:<ProtectedRoute />,
+  {path:"/Dashboard",
+    element:<RoleProtectedRoute allowedRoles={["user"]} />,
     children: [{
-      path:"/Dashboard",
+      index: true,
       element:<Dashboard />
 
     },
+    ],
+  },
   {
         path: "/AdminDashboard",
-        element: <AdminDashboard />,
-      },]
-  },
+        element: <RoleProtectedRoute allowedRoles={["admin"]} />,
+
+        children:[
+          {
+            index:true,
+            element:<AdminDashboard/>,
+          }
+        ],
+      },
 
 ]);
 createRoot(document.getElementById('root')!).render(
