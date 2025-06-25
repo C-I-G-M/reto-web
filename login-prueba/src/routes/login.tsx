@@ -43,7 +43,7 @@ export default function Login(){
              if (rol === "admin") {
                   goTo("/AdminDashboard");
 
-             } else {
+             } else if(rol === "user") {
               goTo("/Dashboard");
             }
             }

@@ -54,7 +54,6 @@ export default function Signup(){
     { id: 40, nombre: "Monseñor Nouel" },
 
 
-  // Agrega todas las provincias que necesites
 ];
 
 
