@@ -8,7 +8,7 @@ interface RoleProtectedRouteProps {
 export default function RoleProtectedRoute({ allowedRoles }: RoleProtectedRouteProps) {
   const { authLoading, IsAuthenticated, getUser } = useAuth();
 
-  if (authLoading) return <div>Cargando sesión...</div>;
+  if (authLoading) return <div></div>;
   if (!IsAuthenticated) return <Navigate to="/" />;
 
   const user = getUser();

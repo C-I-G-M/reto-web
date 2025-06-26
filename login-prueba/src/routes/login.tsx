@@ -73,7 +73,10 @@ export default function Login(){
 
     return(
         <DefaultLayout>
-        <form className="form-container" onSubmit={handlesubmit}>
+        <form
+  className="form-container bg-white text-black dark:bg-gray-800 dark:text-white p-8 rounded-lg shadow-md transition-colors duration-300"
+  onSubmit={handlesubmit}
+>
         <h1>Iniciar Sesion</h1>
         { !! errorResponse && <div className="errorMessage">{errorResponse}</div>}
         <label>Nombre de Usuario</label>
@@ -83,7 +86,7 @@ export default function Login(){
         <input type="password" value={Password} onChange={(e)=> setPassword (e.target.value)}/>
         <button>Iniciar sesion</button>
         {/* Enlace a registro */}
-        <p style={{ marginTop: "1rem" }}>
+        <p className="text-black dark:text-black" style={{ marginTop: "1rem" }}>
           ¿Eres nuevo?{" "}
           <span
             style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
