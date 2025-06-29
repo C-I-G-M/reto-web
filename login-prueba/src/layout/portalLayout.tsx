@@ -3,6 +3,7 @@ import React, { type MouseEvent } from "react";
 import { useAuth } from "../Auth/AuthProvider";
 import { API_URL } from "../Auth/constants";
 import "../layout.css"
+import "../layout/defaultlayout"
 
 interface PortalLayoutProps {
   children?: React.ReactNode;
