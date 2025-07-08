@@ -1,9 +1,10 @@
-import { Component } from "lucide-react"
-import {Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption,} from '../components/table.tsx'
+
+import {Table, TableHeader, TableBody,TableHead, TableRow, TableCell,} from '../components/table.tsx'
 import type { Solicitud } from "../types/types.ts"
 import { Button } from "../components/button"
 import { Badge } from "../components/badge"
 import { Edit, Trash2, Check, X } from "lucide-react"
+
 
 
 interface SolicitudesTableProps {
@@ -35,6 +36,11 @@ export default function TablaSolicitudUsuario({ solicitudes, onEdit, onDelete }:
       </div>
     )
   }
+
+  
+
+
+
     return (
     <div className="overflow-x-auto">
       <Table>

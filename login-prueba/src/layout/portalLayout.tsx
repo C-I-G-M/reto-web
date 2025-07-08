@@ -47,8 +47,8 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
         </Link>
       </li>
       <li>
-        <Link to="/me" style={{ color: "white", textDecoration: "none", fontWeight: "bold" }}>
-          Profile
+        <Link to="/Soli" style={{ color: "white", textDecoration: "none", fontWeight: "bold" }}>
+          Solicitudes
         </Link>
       </li>
       <li>
