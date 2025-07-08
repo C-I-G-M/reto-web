@@ -35,3 +35,25 @@ error?: string;
 
 
 }
+
+export interface Solicitud {
+  idSolicitudMSP: number
+  fechaSolicitud: string
+  idEstablecimiento: number
+  idDirectorTecnico?: number
+  idPropietario?: number
+  tipoDeSolicitud: string
+  reciboPagoTasasNumero?: string
+  estadoSolicitud: string
+  firmadoPorInspector: boolean
+  firmaDirectorTecnico: boolean
+  formularioImpresoOnlineConsultado: boolean
+  formulario004FO056Presentado: boolean
+  licenciaOriginalDepositadaTramitado: boolean
+  idUsuario?: number
+  nombreEstablecimiento?: string
+  nombresDirector?: string
+  apellidosDirector?: string
+  nombrePropietario?: string
+  nombreUsuario?: string
+  }

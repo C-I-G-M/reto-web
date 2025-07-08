@@ -9,6 +9,8 @@ import { AuthProvider } from './Auth/AuthProvider.tsx';
 import "./App.css";
 import AdminDashboard from './routes/AdminDashboard.tsx';
 import RoleProtectedRoute from './routes/RoleProtectedRoutes.tsx';
+import TablaSolicitudUsuario from './routes/TablaSolicitudUsuario.tsx';
+import type { Solicitud } from './types/types.ts';
 
 
 const router = createBrowserRouter([
@@ -21,25 +23,42 @@ const router = createBrowserRouter([
   },
 
   {path:"/Dashboard",
-    element:<RoleProtectedRoute allowedRoles={["user"]} />,
+   /* element:<RoleProtectedRoute allowedRoles={["user"]} />,
     children: [{
       index: true,
       element:<Dashboard />
 
     },
-    ],
+    ],*/
+    element:<Dashboard />
   },
   {
         path: "/AdminDashboard",
-        element: <RoleProtectedRoute allowedRoles={["admin"]} />,
+        /*element: <RoleProtectedRoute allowedRoles={["admin"]} />,
 
         children:[
           {
             index:true,
             element:<AdminDashboard/>,
           }
-        ],
+        ],*/
+         element:<AdminDashboard />
       },
+  {path:"/TablaSolicitudUsuario",
+    /*element: <RoleProtectedRoute allowedRoles={["user"]} />,
+    
+    children:[
+          {
+            index:true,
+            element:<AdminDashboard/>,
+          }
+       ],*/
+        element:<TablaSolicitudUsuario solicitudes={[]} onEdit={function (solicitud: Solicitud): void {
+          throw new Error('Function not implemented.');
+        } } onDelete={function (id: number): void {
+          throw new Error('Function not implemented.');
+        } } />
+}
 
 ]);
 createRoot(document.getElementById('root')!).render(
