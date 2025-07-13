@@ -10,6 +10,9 @@ import "./App.css";
 import AdminDashboard from './routes/AdminDashboard.tsx';
 import RoleProtectedRoute from './routes/RoleProtectedRoutes.tsx';
 import SolicitudesPage from './routes/soli.tsx';
+import FunSolicitud from './routes/FunSolicitud.tsx';
+import FunPropietario from './routes/FunPropiertario.tsx';
+import FunEstablecimiento from './routes/FunEstablecimiento.tsx';
 
 
 const router = createBrowserRouter([
@@ -53,6 +56,40 @@ const router = createBrowserRouter([
           }
         ],
       },
+
+      {
+       path: "/Regsolicitud",
+        element: <RoleProtectedRoute allowedRoles={["user"]} />,
+
+        children:[
+          {
+            index:true,
+            element:<FunSolicitud/>,
+          }
+        ],
+      },
+
+      {
+    path: '/RegPropietario',
+    element: <RoleProtectedRoute allowedRoles={['user']} />,
+    children: [
+      {
+        index: true,
+        element: <FunPropietario />,   
+      },
+    ],
+  },
+
+  {
+    path: '/RegEstablecimiento',
+    element: <RoleProtectedRoute allowedRoles={['user']} />,
+    children: [
+      {
+        index: true,
+        element: <FunEstablecimiento />,   
+      },
+    ],
+  },
  // {path:"/TablaSolicitudUsuario",
     //element: <RoleProtectedRoute allowedRoles={["user"]} />,
     
