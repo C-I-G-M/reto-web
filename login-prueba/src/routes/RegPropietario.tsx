@@ -1,16 +1,14 @@
 // src/solicitud/PropietarioForm.tsx
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import React, { useState, type ChangeEvent, type FormEvent, useEffect } from "react";
+import { API_URL } from "../Auth/constants";
 
 interface Municipio {
   id: number;
   nombre: string;
 }
 
-interface PropietarioFormProps {
-  municipios: Municipio[];
-}
-
-const PropietarioForm: React.FC<PropietarioFormProps> = ({ municipios }) => {
+const PropietarioForm: React.FC = () => {
+const [isEditMode, setIsEditMode] = useState(false);
   const [tipoPropietario, setTipoPropietario] = useState("");
   const [cedulaPropietario, setCedulaPropietario] = useState("");
   const [apellidoPropietario, setApellidoPropietario] = useState("");
@@ -22,26 +20,100 @@ const PropietarioForm: React.FC<PropietarioFormProps> = ({ municipios }) => {
   const [celularPropietario, setCelularPropietario] = useState("");
   const [correoElectronicoPropietario, setCorreoElectronicoPropietario] = useState("");
 
+  const [municipios, setMunicipios] = useState<Municipio[]>([]);
+
+useEffect(() => {
+  const fetchMunicipios = async () => {
+    try {
+      const res = await fetch(`${API_URL}/municipios`);
+      const data = await res.json();
+      console.log(" Municipios desde API:", data);
+
+      if (data.StatusCode) {
+        setMunicipios(data.body);
+      } else {
+        console.error(" Error al cargar municipios:", data.message || "Respuesta no válida");
+      }
+    } catch (error) {
+      console.error(" Error de red al cargar municipios:", error);
+    }
+  };
+
+  fetchMunicipios();
+}, []);
+
+
+useEffect(() => {
+  const fetchPropietario = async () => {
+    try {
+      const res = await fetch(`${API_URL}/propietarios/${cedulaPropietario}`);
+      const data = await res.json();
+      if (data.ok && data.data) {
+  setIsEditMode(true);
+}
+      if (data.ok && data.data) {
+        const p = data.data;
+        setTipoPropietario(p.tipoPropietario);
+        setApellidoPropietario(p.apellidoPropietario);
+        setNombreRazonSocial(p.nombreRazonSocial);
+        setRncPropietario(p.rncPropietario);
+        setDireccionPropietario(p.direccionPropietario);
+        setMunicipioPropietario(p.municipioPropietario);
+        setTelefonoPropietario(p.telefonoPropietario);
+        setCelularPropietario(p.celularPropietario);
+        setCorreoElectronicoPropietario(p.correoElectronicoPropietario);
+      }
+    } catch (err) {
+      console.error("Error al obtener datos del propietario", err);
+    }
+  };
+
+  fetchPropietario();
+}, []);
+
+
   const inputClass =
     "w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200";
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const payload = {
-      tipoPropietario,
-      cedulaPropietario,
-      apellidoPropietario,
-      nombreRazonSocial,
-      rncPropietario,
-      direccionPropietario,
-      municipioPropietario,
-      telefonoPropietario,
-      celularPropietario,
-      correoElectronicoPropietario,
-    };
-    console.log("Registrar propietario:", payload);
-    // TODO: conectar con API
+const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const payload = {
+    tipoPropietario,
+    cedulaPropietario,
+    apellidoPropietario,
+    nombreRazonSocial,
+    rncPropietario,
+    direccionPropietario,
+    municipioPropietario,
+    telefonoPropietario,
+    celularPropietario,
+    correoElectronicoPropietario,
   };
+
+  try {
+    const method = isEditMode ? "PUT" : "POST"; // ← modo edición o creación
+    const endpoint = isEditMode
+      ? `${API_URL}/propietarios/${cedulaPropietario}`
+      : `${API_URL}/propietarios`;
+
+    const res = await fetch(endpoint, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (data.ok) {
+      alert(isEditMode ? "Propietario actualizado" : "Registro exitoso");
+    } else {
+      alert("Error: " + data.message);
+    }
+  } catch (err) {
+    console.error("Error al guardar propietario", err);
+    alert("Error al conectar con el servidor");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">

@@ -1,15 +1,12 @@
-import React, { useState, type ChangeEvent, type FormEvent } from 'react';
+import React, { useState, type ChangeEvent, type FormEvent, useEffect } from 'react';
+import { API_URL } from '../Auth/constants';
 
 interface Municipio {
   id: number;
   nombre: string;
 }
 
-interface EstablecimientoFormProps {
-  municipios: Municipio[];
-}
-
-const EstablecimientoForm: React.FC<EstablecimientoFormProps> = ({ municipios }) => {
+const EstablecimientoForm: React.FC = () => {
   const [nombre, setNombre] = useState('');
   const [direccion, setDireccion] = useState('');
   const [barrio, setBarrio] = useState('');
@@ -24,31 +21,77 @@ const EstablecimientoForm: React.FC<EstablecimientoFormProps> = ({ municipios })
   const [actividad, setActividad] = useState('');
   const [responsable, setResponsable] = useState('');
   const [nota, setNota] = useState('');
+   const [municipios, setMunicipios] = useState<Municipio[]>([]);
+
+   
+   useEffect(() => {
+     const fetchMunicipios = async () => {
+       try {
+         const res = await fetch(`${API_URL}/municipios`);
+         const data = await res.json();
+         console.log(" Municipios desde API:", data);
+   
+         if (data.StatusCode) {
+           setMunicipios(data.body);
+         } else {
+           console.error(" Error al cargar municipios:", data.message || "Respuesta no válida");
+         }
+       } catch (error) {
+         console.error(" Error de red al cargar municipios:", error);
+       }
+     };
+   
+     fetchMunicipios();
+   }, []);
 
   const inputClass =
     'w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200';
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const payload = {
-      nombreEstablecimiento: nombre,
-      direccionCalleNumero: direccion,
-      barrioSector: barrio,
-      ciudad,
-      idMunicipio: municipioId,
-      tipoEstablecimiento: tipo,
-      rncEstablecimiento: rnc,
-      telefonoEstablecimiento: telefono,
-      correoElectronicoEstablecimiento: correo,
-      fechaApertura: fechaApertura || null,
-      representanteTipo: repTipo || null,
-      tipoActividad: actividad || null,
-      nombreResponsable: responsable || null,
-      notaAdicional: nota || null,
-    };
-    console.log('Registrar establecimiento:', payload);
-    // TODO: conectar con API
+const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const payload = {
+    nombreEstablecimiento: nombre,
+    direccionCalleNumero: direccion,
+    barrioSector: barrio,
+    ciudad,
+    idMunicipio: municipioId,
+    tipoEstablecimiento: tipo,
+    rncEstablecimiento: rnc,
+    telefonoEstablecimiento: telefono,
+    correoElectronicoEstablecimiento: correo,
+    fechaApertura: fechaApertura || null,
+    representanteTipo: repTipo || null,
+    tipoActividad: actividad || null,
+    nombreResponsable: responsable || null,
+    notaAdicional: nota || null,
   };
+
+  try {
+    const response = await fetch(`${API_URL}/establecimientos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // si usas token para auth, agregalo aquí, por ej:
+        // Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (data.ok) {
+      alert("Establecimiento registrado exitosamente");
+      // opcional: limpiar formulario o redireccionar
+    } else {
+      alert("Error al registrar establecimiento: " + (data.message || "Error desconocido"));
+    }
+  } catch (error) {
+    console.error("Error al conectar con el servidor:", error);
+    alert("Error de conexión con el servidor");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">

@@ -18,8 +18,10 @@ app.use("/api/users", authenticate, require("./routes/users"));
 app.use("/api/login", require("./routes/login"));
 app.use("/api/refreshtoken", require("./routes/refreshtoken"));
 app.use("/api/solicitudes" , require("./routes/solicitudes"));
-app.use("/api/establecimientos", authenticate, require("./routes/establecimientos"));
-
+app.use("/api/establecimientos", require("./routes/establecimientos"));
+app.use("/api/propietarios", require("./routes/propietarios"));
+app.use("/api/municipios", require("./routes/municipios"));
+app.use("/api/crearsoli",require("./routes/crearsoli"));
 
 app.get('/', async (req,res)=>
     {res.send('hello world!'); 
