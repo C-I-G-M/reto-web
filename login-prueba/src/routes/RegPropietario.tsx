@@ -1,6 +1,7 @@
 // src/solicitud/PropietarioForm.tsx
 import React, { useState, type ChangeEvent, type FormEvent, useEffect } from "react";
 import { API_URL } from "../Auth/constants";
+import { useAuth } from "../Auth/AuthProvider";
 
 interface Municipio {
   id: number;
@@ -8,7 +9,7 @@ interface Municipio {
 }
 
 const PropietarioForm: React.FC = () => {
-const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [tipoPropietario, setTipoPropietario] = useState("");
   const [cedulaPropietario, setCedulaPropietario] = useState("");
   const [apellidoPropietario, setApellidoPropietario] = useState("");
@@ -20,100 +21,115 @@ const [isEditMode, setIsEditMode] = useState(false);
   const [celularPropietario, setCelularPropietario] = useState("");
   const [correoElectronicoPropietario, setCorreoElectronicoPropietario] = useState("");
 
-  const [municipios, setMunicipios] = useState<Municipio[]>([]);
+  const [municipios, setMunicipio] = useState<Municipio[]>([]);
 
-useEffect(() => {
-  const fetchMunicipios = async () => {
-    try {
-      const res = await fetch(`${API_URL}/municipios`);
-      const data = await res.json();
-      console.log(" Municipios desde API:", data);
+  const { getAccessToken } = useAuth();
 
-      if (data.StatusCode) {
-        setMunicipios(data.body);
-      } else {
-        console.error(" Error al cargar municipios:", data.message || "Respuesta no válida");
+  // Carga municipios al inicio
+  useEffect(() => {
+    const fetchMunicipios = async () => {
+      try {
+        const res = await fetch(`${API_URL}/municipios`);
+        const data = await res.json();
+        if (data.StatusCode) {
+          setMunicipio(data.body);
+        } else {
+          console.error("Error al cargar municipios:", data.message || "Respuesta no válida");
+        }
+      } catch (error) {
+        console.error("Error de red al cargar municipios:", error);
       }
-    } catch (error) {
-      console.error(" Error de red al cargar municipios:", error);
-    }
-  };
+    };
+    fetchMunicipios();
+  }, []);
 
-  fetchMunicipios();
-}, []);
+  // Cargar propietario según userId (token)
+  useEffect(() => {
+    const fetchPropietarioByUser = async () => {
+      try {
+        const accessToken = getAccessToken();
+        if (!accessToken) return;
 
+        const res = await fetch(`${API_URL}/propietarioporid`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const data = await res.json();
 
-useEffect(() => {
-  const fetchPropietario = async () => {
-    try {
-      const res = await fetch(`${API_URL}/propietarios/${cedulaPropietario}`);
-      const data = await res.json();
-      if (data.ok && data.data) {
-  setIsEditMode(true);
-}
-      if (data.ok && data.data) {
-        const p = data.data;
-        setTipoPropietario(p.tipoPropietario);
-        setApellidoPropietario(p.apellidoPropietario);
-        setNombreRazonSocial(p.nombreRazonSocial);
-        setRncPropietario(p.rncPropietario);
-        setDireccionPropietario(p.direccionPropietario);
-        setMunicipioPropietario(p.municipioPropietario);
-        setTelefonoPropietario(p.telefonoPropietario);
-        setCelularPropietario(p.celularPropietario);
-        setCorreoElectronicoPropietario(p.correoElectronicoPropietario);
+        if (data.StatusCode) {
+          const p = data.body;
+          setIsEditMode(true);
+          setTipoPropietario(p.TipoPropietario || "");
+          setCedulaPropietario(p.CedulaPropietario || "");
+          setApellidoPropietario(p.ApellidoPropietario || "");
+          setNombreRazonSocial(p.NombreRazonSocial || "");
+          setRncPropietario(p.RNC_Propietario || "");
+          setDireccionPropietario(p.DireccionPropietario || "");
+          setMunicipioPropietario(p.ID_MunicipioPropietario || "");
+          setTelefonoPropietario(p.TelefonoPropietario || "");
+          setCelularPropietario(p.CelularPropietario || "");
+          setCorreoElectronicoPropietario(p.CorreoElectronicoPropietario || "");
+        } else {
+          setIsEditMode(false);
+        }
+      } catch (err) {
+        console.error("Error al obtener propietario por usuario", err);
       }
-    } catch (err) {
-      console.error("Error al obtener datos del propietario", err);
-    }
-  };
+    };
 
-  fetchPropietario();
-}, []);
-
+    fetchPropietarioByUser();
+  }, [getAccessToken]);
 
   const inputClass =
     "w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200";
 
-const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const payload = {
-    tipoPropietario,
-    cedulaPropietario,
-    apellidoPropietario,
-    nombreRazonSocial,
-    rncPropietario,
-    direccionPropietario,
-    municipioPropietario,
-    telefonoPropietario,
-    celularPropietario,
-    correoElectronicoPropietario,
-  };
+    const payload = {
+      tipoPropietario,
+      cedulaPropietario,
+      apellidoPropietario,
+      nombreRazonSocial,
+      rncPropietario,
+      direccionPropietario,
+      municipioPropietario,
+      telefonoPropietario,
+      celularPropietario,
+      correoElectronicoPropietario,
+    };
 
-  try {
-    const method = isEditMode ? "PUT" : "POST"; // ← modo edición o creación
-    const endpoint = isEditMode
-      ? `${API_URL}/propietarios/${cedulaPropietario}`
-      : `${API_URL}/propietarios`;
+    try {
+      const method = isEditMode ? "PUT" : "POST";
+      const endpoint = `${API_URL}/propietarios`;
 
-    const res = await fetch(endpoint, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      const accessToken = getAccessToken();
+      if (!accessToken) {
+        alert("No autenticado");
+        return;
+      }
 
-    const data = await res.json();
-    if (data.ok) {
-      alert(isEditMode ? "Propietario actualizado" : "Registro exitoso");
-    } else {
-      alert("Error: " + data.message);
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.StatusCode) {
+        alert(isEditMode ? "Propietario actualizado" : "Registro exitoso");
+      } else {
+        alert("Error: " + (data.message || "Error desconocido"));
+      }
+    } catch (err) {
+      console.error("Error al guardar propietario", err);
+      alert("Error al conectar con el servidor");
     }
-  } catch (err) {
-    console.error("Error al guardar propietario", err);
-    alert("Error al conectar con el servidor");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
@@ -199,7 +215,9 @@ const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
               >
                 <option value="">Selecciona...</option>
                 {municipios.map((m) => (
-                  <option key={m.id} value={m.id}>{m.nombre}</option>
+                  <option key={m.id} value={m.id}>
+                    {m.nombre}
+                  </option>
                 ))}
               </select>
             </div>
@@ -236,7 +254,7 @@ const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
           </div>
           <div className="pt-6 text-right">
             <button type="submit" className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700">
-              Registrar
+              {isEditMode ? "Actualizar" : "Registrar"}
             </button>
           </div>
         </form>

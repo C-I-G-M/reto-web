@@ -21,7 +21,10 @@ app.use("/api/solicitudes" , require("./routes/solicitudes"));
 app.use("/api/establecimientos", require("./routes/establecimientos"));
 app.use("/api/propietarios", require("./routes/propietarios"));
 app.use("/api/municipios", require("./routes/municipios"));
-app.use("/api/crearsoli",require("./routes/crearsoli"));
+app.use("/api/crearsoli",authenticate,require("./routes/crearsoli"));
+app.use("/api/propietarioporid", require("./routes/propietarioporid"));
+app.use("/api/solicitudesData", require("./routes/solicitudesData"));
+app.use("/api/enviarsoli", require("./routes/enviarsoli"));
 
 app.get('/', async (req,res)=>
     {res.send('hello world!'); 

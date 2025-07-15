@@ -1,60 +1,103 @@
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import React, { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
+import { API_URL } from "../Auth/constants";
+import { useAuth } from "../Auth/AuthProvider";
 
 interface Option {
   id: number;
   nombre: string;
 }
 
-interface SolicitudFormProps {
-  userId: string;
-  establecimientos: Option[];
-  directoresTecnicos: Option[];
-  propietarios: Option[];
-}
+const SolicitudForm: React.FC = () => {
+  const { getAccessToken, getUser, authLoading } = useAuth();
 
-const SolicitudForm: React.FC<SolicitudFormProps> = ({
-  userId,
-  establecimientos,
-  directoresTecnicos,
-  propietarios,
-}) => {
+  const [establecimientos, setEstablecimientos] = useState<Option[]>([]);
+  const [directoresTecnicos, setDirectoresTecnicos] = useState<Option[]>([]);
+  const [propietarios, setPropietarios] = useState<Option[]>([]);
+
   const [establecimientoId, setEstablecimientoId] = useState<number | "">("");
   const [directorTecnicoId, setDirectorTecnicoId] = useState<number | "">("");
   const [propietarioId, setPropietarioId] = useState<number | "">("");
-  const [tipoDeSolicitud, setTipoDeSolicitud] = useState<string>("");
-  const [reciboPagoTasasNumero, setReciboPagoTasasNumero] = useState<string>("");
-  const [estadoSolicitud, setEstadoSolicitud] = useState<string>("");
+  const [tipoDeSolicitud, setTipoDeSolicitud] = useState("");
+  const [reciboPagoTasasNumero, setReciboPagoTasasNumero] = useState("");
+  const [estadoSolicitud, setEstadoSolicitud] = useState("");
 
-  // Archivos de documentos firmados
   const [archivoInspector, setArchivoInspector] = useState<File | null>(null);
   const [archivoDirector, setArchivoDirector] = useState<File | null>(null);
   const [archivoFormulario, setArchivoFormulario] = useState<File | null>(null);
   const [archivoF056, setArchivoF056] = useState<File | null>(null);
   const [archivoLicencia, setArchivoLicencia] = useState<File | null>(null);
 
-  const inputClass =
-    "w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200";
+  const inputClass = "w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = getAccessToken();
+      const user = getUser();
+      if (!token || !user) return;
+
+      try {
+        const res = await fetch(`${API_URL}/solicitudesData`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = await res.json();
+
+        if (data.StatusCode) {
+          setEstablecimientos(data.body.establecimientos);
+          setPropietarios(data.body.propietarios);
+          setDirectoresTecnicos(data.body.directoresTecnicos);
+        } else {
+          console.error("Error al cargar datos:", data.message || "Desconocido");
+        }
+      } catch (error) {
+        console.error("Error en la carga de datos:", error);
+      }
+    };
+
+    if (!authLoading) fetchData();
+  }, [authLoading, getAccessToken, getUser]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Construir FormData para envío de archivos
+    const token = getAccessToken();
+    const user = getUser();
+    if (!token || !user) return alert("Sesión no válida");
+
     const formData = new FormData();
-    formData.append('ID_Establecimiento', String(establecimientoId));
-    formData.append('ID_DirectorTecnico', directorTecnicoId ? String(directorTecnicoId) : '');
-    formData.append('ID_Propietario', propietarioId ? String(propietarioId) : '');
-    formData.append('TipoDeSolicitud', tipoDeSolicitud);
-    formData.append('ReciboPagoTasasNumero', reciboPagoTasasNumero);
-    formData.append('EstadoSolicitud', estadoSolicitud);
-    formData.append('ID_Usuario', userId);
+    formData.append("ID_Establecimiento", String(establecimientoId));
+    formData.append("ID_DirectorTecnico", directorTecnicoId ? String(directorTecnicoId) : "");
+    formData.append("ID_Propietario", propietarioId ? String(propietarioId) : "");
+    formData.append("TipoDeSolicitud", tipoDeSolicitud);
+    formData.append("ReciboPagoTasasNumero", reciboPagoTasasNumero);
+    formData.append("EstadoSolicitud", estadoSolicitud);
+    formData.append("ID_Usuario", String(user.id));
 
-    if (archivoInspector) formData.append('ArchivoInspector', archivoInspector);
-    if (archivoDirector) formData.append('ArchivoDirector', archivoDirector);
-    if (archivoFormulario) formData.append('ArchivoFormulario', archivoFormulario);
-    if (archivoF056) formData.append('ArchivoF056', archivoF056);
-    if (archivoLicencia) formData.append('ArchivoLicencia', archivoLicencia);
+    if (archivoInspector) formData.append("ArchivoInspector", archivoInspector);
+    if (archivoDirector) formData.append("ArchivoDirector", archivoDirector);
+    if (archivoFormulario) formData.append("ArchivoFormulario", archivoFormulario);
+    if (archivoF056) formData.append("ArchivoF056", archivoF056);
+    if (archivoLicencia) formData.append("ArchivoLicencia", archivoLicencia);
 
-    // TODO: POST formData a tu endpoint: fetch('/api/solicitudes', { method: 'POST', body: formData })
+    fetch(`${API_URL}/enviarsoli`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.StatusCode) {
+          alert("Solicitud registrada exitosamente");
+        } else {
+          alert("Error al registrar solicitud: " + (data.message || "Desconocido"));
+        }
+      })
+      .catch((err) => {
+        console.error("Error al enviar solicitud:", err);
+        alert("Error de red al enviar solicitud");
+      });
   };
+
+  if (authLoading) return <p className="text-center py-10">Cargando...</p>;
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
@@ -64,78 +107,59 @@ const SolicitudForm: React.FC<SolicitudFormProps> = ({
         </div>
         <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Establecimiento */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Establecimiento</label>
-              <select
-                value={establecimientoId}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setEstablecimientoId(Number(e.target.value))}
-                className={inputClass}
-                required
-              >
+              <select value={establecimientoId} onChange={(e) => setEstablecimientoId(Number(e.target.value))} className={inputClass} required>
                 <option value="">Selecciona...</option>
                 {establecimientos.map((e) => (
                   <option key={e.id} value={e.id}>{e.nombre}</option>
                 ))}
               </select>
             </div>
+
+            {/* Director Técnico */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Director Técnico</label>
-              <select
-                value={directorTecnicoId}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setDirectorTecnicoId(Number(e.target.value))}
-                className={inputClass}
-              >
+              <select value={directorTecnicoId} onChange={(e) => setDirectorTecnicoId(Number(e.target.value))} className={inputClass}>
                 <option value="">Ninguno</option>
                 {directoresTecnicos.map((d) => (
                   <option key={d.id} value={d.id}>{d.nombre}</option>
                 ))}
               </select>
             </div>
+
+            {/* Propietario */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Propietario</label>
-              <select
-                value={propietarioId}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setPropietarioId(Number(e.target.value))}
-                className={inputClass}
-              >
+              <select value={propietarioId} onChange={(e) => setPropietarioId(Number(e.target.value))} className={inputClass}>
                 <option value="">Ninguno</option>
                 {propietarios.map((p) => (
                   <option key={p.id} value={p.id}>{p.nombre}</option>
                 ))}
               </select>
             </div>
+
+            {/* Tipo de Solicitud */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Solicitud</label>
-              <input
-                type="text"
-                value={tipoDeSolicitud}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setTipoDeSolicitud(e.target.value)}
-                className={inputClass}
-                required
-              />
+              <input type="text" value={tipoDeSolicitud} onChange={(e) => setTipoDeSolicitud(e.target.value)} className={inputClass} required />
             </div>
+
+            {/* Recibo pago tasas */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Recibo Pago Tasas #</label>
-              <input
-                type="text"
-                value={reciboPagoTasasNumero}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setReciboPagoTasasNumero(e.target.value)}
-                className={inputClass}
-              />
+              <input type="text" value={reciboPagoTasasNumero} onChange={(e) => setReciboPagoTasasNumero(e.target.value)} className={inputClass} />
             </div>
+
+            {/* Estado */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado de Solicitud</label>
-              <input
-                type="text"
-                value={estadoSolicitud}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setEstadoSolicitud(e.target.value)}
-                className={inputClass}
-                required
-              />
+              <input type="text" value={estadoSolicitud} onChange={(e) => setEstadoSolicitud(e.target.value)} className={inputClass} required />
             </div>
           </div>
 
-          {/* Documentos firmados */}
+          {/* Archivos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Archivo Inspector</label>

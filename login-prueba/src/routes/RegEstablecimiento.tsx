@@ -1,5 +1,7 @@
-import React, { useState, type ChangeEvent, type FormEvent, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { API_URL } from '../Auth/constants';
+import { useAuth } from '../Auth/AuthProvider';
 
 interface Municipio {
   id: number;
@@ -7,6 +9,10 @@ interface Municipio {
 }
 
 const EstablecimientoForm: React.FC = () => {
+  const { getAccessToken } = useAuth();
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [establecimientoId, setEstablecimientoId] = useState<number | null>(null);
   const [nombre, setNombre] = useState('');
   const [direccion, setDireccion] = useState('');
   const [barrio, setBarrio] = useState('');
@@ -21,77 +27,111 @@ const EstablecimientoForm: React.FC = () => {
   const [actividad, setActividad] = useState('');
   const [responsable, setResponsable] = useState('');
   const [nota, setNota] = useState('');
-   const [municipios, setMunicipios] = useState<Municipio[]>([]);
+  const [municipios, setMunicipios] = useState<Municipio[]>([]);
 
-   
-   useEffect(() => {
-     const fetchMunicipios = async () => {
-       try {
-         const res = await fetch(`${API_URL}/municipios`);
-         const data = await res.json();
-         console.log(" Municipios desde API:", data);
-   
-         if (data.StatusCode) {
-           setMunicipios(data.body);
-         } else {
-           console.error(" Error al cargar municipios:", data.message || "Respuesta no válida");
-         }
-       } catch (error) {
-         console.error(" Error de red al cargar municipios:", error);
-       }
-     };
-   
-     fetchMunicipios();
-   }, []);
+  useEffect(() => {
+    const fetchMunicipios = async () => {
+      try {
+        const res = await fetch(`${API_URL}/municipios`);
+        const data = await res.json();
+        if (data.StatusCode) {
+          setMunicipios(data.body);
+        } else {
+          console.error("Error al cargar municipios:", data.message);
+        }
+      } catch (error) {
+        console.error("Error de red al cargar municipios:", error);
+      }
+    };
 
-  const inputClass =
-    'w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200';
+    fetchMunicipios();
+  }, []);
 
-const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  useEffect(() => {
+    const fetchEstablecimiento = async () => {
+      try {
+        const res = await fetch(`${API_URL}/establecimientos/by-user`, {
+          headers: {
+            Authorization: `Bearer ${getAccessToken()}`,
+          },
+        });
+        const data = await res.json();
 
-  const payload = {
-    nombreEstablecimiento: nombre,
-    direccionCalleNumero: direccion,
-    barrioSector: barrio,
-    ciudad,
-    idMunicipio: municipioId,
-    tipoEstablecimiento: tipo,
-    rncEstablecimiento: rnc,
-    telefonoEstablecimiento: telefono,
-    correoElectronicoEstablecimiento: correo,
-    fechaApertura: fechaApertura || null,
-    representanteTipo: repTipo || null,
-    tipoActividad: actividad || null,
-    nombreResponsable: responsable || null,
-    notaAdicional: nota || null,
-  };
+        if (data.StatusCode && data.body) {
+          setIsEditMode(true);
+          setEstablecimientoId(data.body.ID_Establecimiento);
+          setNombre(data.body.NombreEstablecimiento);
+          setDireccion(data.body.DireccionCalleNumero);
+          setBarrio(data.body.BarrioSector);
+          setCiudad(data.body.Ciudad);
+          setMunicipioId(data.body.ID_Municipio);
+          setTipo(data.body.TipoEstablecimiento);
+          setRnc(data.body.RNC_Establecimiento);
+          setTelefono(data.body.TelefonoEstablecimiento);
+          setCorreo(data.body.CorreoElectronicoEstablecimiento);
+          setFechaApertura(data.body.FechaApertura?.split('T')[0] || '');
+          setRepTipo(data.body.RepresentanteTipo);
+          setActividad(data.body.TipoActividad);
+          setResponsable(data.body.NombreResponsable);
+          setNota(data.body.NotaAdicional);
+        }
+      } catch (error) {
+        console.error("Error al obtener establecimiento del usuario:", error);
+      }
+    };
 
-  try {
-    const response = await fetch(`${API_URL}/establecimientos`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // si usas token para auth, agregalo aquí, por ej:
-        // Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    fetchEstablecimiento();
+  }, []);
 
-    const data = await response.json();
+  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200';
 
-    if (data.ok) {
-      alert("Establecimiento registrado exitosamente");
-      // opcional: limpiar formulario o redireccionar
-    } else {
-      alert("Error al registrar establecimiento: " + (data.message || "Error desconocido"));
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const payload = {
+      nombreEstablecimiento: nombre,
+      direccionCalleNumero: direccion,
+      barrioSector: barrio,
+      ciudad,
+      idMunicipio: municipioId,
+      tipoEstablecimiento: tipo,
+      rncEstablecimiento: rnc,
+      telefonoEstablecimiento: telefono,
+      correoElectronicoEstablecimiento: correo,
+      fechaApertura: fechaApertura || null,
+      representanteTipo: repTipo || null,
+      tipoActividad: actividad || null,
+      nombreResponsable: responsable || null,
+      notaAdicional: nota || null,
+    };
+
+    try {
+      const method = isEditMode ? "PUT" : "POST";
+      const endpoint = isEditMode
+        ? `${API_URL}/establecimientos/${establecimientoId}`
+        : `${API_URL}/establecimientos`;
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getAccessToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.StatusCode) {
+        alert(isEditMode ? "Establecimiento actualizado" : "Establecimiento registrado");
+      } else {
+        alert("Error: " + (data.message || "No se pudo completar la operación"));
+      }
+    } catch (error) {
+      console.error("Error al enviar datos:", error);
+      alert("Error de conexión con el servidor");
     }
-  } catch (error) {
-    console.error("Error al conectar con el servidor:", error);
-    alert("Error de conexión con el servidor");
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
