@@ -7,7 +7,8 @@ const { jsonResponse } = require("../lib/jsonresponse");
 router.get("/", async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query(`
+    const result = await pool.request()
+    .query(`
       SELECT ID_Municipio AS id, NombreMunicipio AS nombre, ID_Provincia AS provinciaId
       FROM Municipios
       ORDER BY nombre
@@ -15,7 +16,7 @@ router.get("/", async (req, res) => {
 
     res.json(jsonResponse(true, result.recordset));
   } catch (error) {
-    console.error("❌ Error al obtener municipios:", error);
+    console.error(" Error al obtener municipios:", error);
     res.status(500).json(jsonResponse(false, null, "Error al obtener municipios"));
   }
 });
@@ -34,14 +35,12 @@ router.post("/", async (req, res) => {
     await pool.request()
       .input("NombreMunicipio", sql.VarChar(255), nombreMunicipio)
       .input("ID_Provincia", sql.Int, idProvincia)
-      .query(`
-        INSERT INTO Municipios (NombreMunicipio, ID_Provincia)
-        VALUES (@NombreMunicipio, @ID_Provincia)
-      `);
+      .execute("SeleccionarMunicipios");
+ 
 
     res.status(201).json(jsonResponse(true, null, "✅ Municipio registrado correctamente"));
   } catch (error) {
-    console.error("❌ Error al registrar municipio:", error);
+    console.error(" Error al registrar municipio:", error);
     res.status(500).json(jsonResponse(false, null, "Error al registrar municipio"));
   }
 });

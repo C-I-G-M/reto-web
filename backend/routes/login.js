@@ -9,7 +9,7 @@ const { generateAccessToken, generateRefreshToken } = require("../lib/auth");
 router.post("/", async (req, res) => {
     const {Username, Password} = req.body;
 
-    if (!!!Username || !!!Password) {
+    if (!Username || !Password) {
         return res.status(400).json(jsonResponse(400,{error:"todos los campos son obligatorios"}));
     }
 
@@ -26,8 +26,8 @@ router.post("/", async (req, res) => {
 
         const result = await pool.request()
             .input("Nombre_de_Usuario", sql.VarChar, Username)
-            .query("SELECT * FROM Usuarios WHERE Nombre_de_Usuario = @Nombre_de_Usuario");
-
+            .execute("SP_ObtenerUsuarioPorNombre");
+           
         if (result.recordset.length === 0) {
             return res.status(404).json(jsonResponse(404, { error: "Usuario no encontrado" }));
         }
@@ -55,11 +55,8 @@ router.post("/", async (req, res) => {
 await pool.request()
     .input("UserId", sql.Int, userFromDb.ID_Usuario)
     .input("Token", sql.NVarChar(sql.MAX), refreshToken)
-    .query(`
-        INSERT INTO RefreshTokens (UserId, Token)
-        VALUES (@UserId, @Token)
-    `);
-        
+    .execute("SP_InsertarRefreshToken");
+   
 
 
         return res.status(200).json(jsonResponse(200, {

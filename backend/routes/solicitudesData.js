@@ -13,26 +13,16 @@ router.get("/", authenticateAccessToken, async (req, res) => {
     // Establecimientos del usuario
     const establecimientos = await pool.request()
       .input("ID_Usuario", sql.Int, userId)
-      .query(`
-        SELECT ID_Establecimiento AS id, NombreEstablecimiento AS nombre
-        FROM Establecimientos
-        WHERE ID_Usuario = @ID_Usuario
-      `);
-
+      .execute("SP_ObtenerEstablecimientosPorUsuario");
+  
     // Propietarios del usuario
     const propietarios = await pool.request()
       .input("ID_Usuario", sql.Int, userId)
-      .query(`
-        SELECT ID_Propietario AS id, NombreRazonSocial AS nombre
-        FROM Propietarios
-        WHERE ID_Usuario = @ID_Usuario
-      `);
-
+      .execute("SP_ObtenerPropietariosPorUsuario_Select");
+  
     // Todos los directores técnicos
-    const directores = await pool.request().query(`
-      SELECT ID_Director AS id, NombresDirector AS nombre
-      FROM DirectoresTecnicos
-    `);
+    const directores = await pool.request()
+    .execute("SP_ObtenerDirectoresTecnicos");
 
     res.json({
       StatusCode: true,

@@ -69,7 +69,7 @@ const SolicitudForm: React.FC = () => {
     formData.append("ID_Propietario", propietarioId ? String(propietarioId) : "");
     formData.append("TipoDeSolicitud", tipoDeSolicitud);
     formData.append("ReciboPagoTasasNumero", reciboPagoTasasNumero);
-    formData.append("EstadoSolicitud", estadoSolicitud);
+    formData.append("EstadoSolicitud", "Pendiente");
     formData.append("ID_Usuario", String(user.id));
 
     if (archivoInspector) formData.append("ArchivoInspector", archivoInspector);
@@ -153,10 +153,10 @@ const SolicitudForm: React.FC = () => {
             </div>
 
             {/* Estado */}
-            <div>
+           { /*<div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado de Solicitud</label>
               <input type="text" value={estadoSolicitud} onChange={(e) => setEstadoSolicitud(e.target.value)} className={inputClass} required />
-            </div>
+            </div>*/}
           </div>
 
           {/* Archivos */}

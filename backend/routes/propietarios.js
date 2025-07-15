@@ -106,7 +106,7 @@ router.get("/byUser", authenticateAccessToken, async (req, res) => {
     const result = await pool
       .request()
       .input("ID_Usuario", sql.Int, userId)
-      .query("SELECT * FROM Propietarios WHERE ID_Usuario = @ID_Usuario");
+       .execute("SP_ObtenerPropietariosPorUsuario");
 
     if (result.recordset.length > 0) {
       res.json(jsonResponse(true, result.recordset[0]));
@@ -148,20 +148,8 @@ router.put("/", authenticateAccessToken, async (req, res) => {
       .input("CelularPropietario", sql.VarChar(50), celularPropietario || null)
       .input("CorreoElectronicoPropietario", sql.VarChar(255), correoElectronicoPropietario || null)
       .input("ID_Usuario", sql.Int, userId)
-      .query(`
-        UPDATE Propietarios SET
-          TipoPropietario = @TipoPropietario,
-          ApellidoPropietario = @ApellidoPropietario,
-          NombreRazonSocial = @NombreRazonSocial,
-          RNC_Propietario = @RNC_Propietario,
-          DireccionPropietario = @DireccionPropietario,
-          ID_MunicipioPropietario = @ID_MunicipioPropietario,
-          TelefonoPropietario = @TelefonoPropietario,
-          CelularPropietario = @CelularPropietario,
-          CorreoElectronicoPropietario = @CorreoElectronicoPropietario
-        WHERE ID_Usuario = @ID_Usuario
-      `);
-
+      .execute("SP_ActualizarPropietarioPorUsuario");
+   
     res.json(jsonResponse(true, null, "Propietario actualizado correctamente"));
   } catch (err) {
     console.error("Error al actualizar propietario:", err);

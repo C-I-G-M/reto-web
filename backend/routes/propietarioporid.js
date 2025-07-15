@@ -14,7 +14,8 @@ router.get("/", authenticateAccessToken, async (req, res) => {
     const result = await pool
       .request()
       .input("ID_Usuario", sql.Int, userId)
-      .query("SELECT * FROM Propietarios WHERE ID_Usuario = @ID_Usuario");
+      .execute("SP_ObtenerPropietariosPorUsuario");
+     // .query("SELECT * FROM Propietarios WHERE ID_Usuario = @ID_Usuario");
 
     if (result.recordset.length > 0) {
       res.json(jsonResponse(true, result.recordset[0]));

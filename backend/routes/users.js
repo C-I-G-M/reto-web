@@ -14,7 +14,8 @@ router.get("/", authenticateAccessToken, async (req, res) => {
     const pool = await poolPromise;
     const result = await pool.request()
       .input("ID_Usuario", sql.Int, ID_Usuario)
-      .query("SELECT ID_Usuario AS id, Nombre_de_Usuario AS username, Rol AS rol FROM Usuarios WHERE ID_Usuario = @ID_Usuario");
+      .execute("SP_ObtenerUsuarioPorID");
+      //.query("SELECT ID_Usuario AS id, Nombre_de_Usuario AS username, Rol AS rol FROM Usuarios WHERE ID_Usuario = @ID_Usuario");
 
     if (result.recordset.length === 0) {
       return res.status(404).json(jsonResponse(404, { error: "Usuario no encontrado" }));
