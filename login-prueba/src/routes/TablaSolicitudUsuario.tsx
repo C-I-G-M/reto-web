@@ -1,47 +1,104 @@
-
-import {Table, TableHeader, TableBody,TableHead, TableRow, TableCell,} from '../components/table.tsx'
-import type { Solicitud } from "../types/types.ts"
-import { Button } from "../components/button"
-import { Badge } from "../components/badge"
-import { Edit, Trash2, Check, X } from "lucide-react"
-
-
+import { useEffect, useState } from "react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "../components/table.tsx";
+import type { Solicitud } from "../types/types.ts";
+import { Button } from "../components/button";
+import { Badge } from "../components/badge";
+import { Edit, Trash2, Check, X } from "lucide-react";
+import { useAuth } from "../Auth/AuthProvider.tsx";
+import { API_URL } from "../Auth/constants";
 
 interface SolicitudesTableProps {
-  solicitudes: Solicitud[]
-  onEdit: (solicitud: Solicitud) => void
-  onDelete: (id: number) => void
+  onEdit: (solicitud: Solicitud) => void;
+  onDelete: (id: number) => void;
 }
 
-export default function TablaSolicitudUsuario({ solicitudes, onEdit, onDelete }: SolicitudesTableProps) {
+export default function TablaSolicitudUsuario({
+  onEdit,
+  onDelete,
+}: SolicitudesTableProps) {
+  const { getAccessToken, authLoading } = useAuth();
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSolicitudes = async () => {
+      try {
+        const token = getAccessToken();
+        if (!token) {
+          console.warn("Token no disponible");
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/solicitudes`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al obtener las solicitudes");
+        }
+
+        const data = await response.json();
+        setSolicitudes(data);
+      } catch (error) {
+        console.error("Error al cargar solicitudes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!authLoading) {
+      fetchSolicitudes();
+    }
+  }, [authLoading, getAccessToken]);
+
   const getEstadoBadge = (estado: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       Pendiente: "outline",
       "En Proceso": "secondary",
       Aprobada: "default",
       Rechazada: "destructive",
       Completada: "default",
-    }
+    };
 
-    return <Badge variant={variants[estado] || "outline"}>{estado}</Badge>
-  }
+    return <Badge variant={variants[estado] || "outline"}>{estado}</Badge>;
+  };
 
   const BooleanIcon = ({ value }: { value: boolean }) =>
-    value ? <Check className="w-4 h-4 text-green-600" /> : <X className="w-4 h-4 text-red-600" />
+    value ? (
+      <Check className="w-4 h-4 text-green-600" />
+    ) : (
+      <X className="w-4 h-4 text-red-600" />
+    );
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Cargando solicitudes...</p>
+      </div>
+    );
+  }
 
   if (solicitudes.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">No hay solicitudes registradas</p>
       </div>
-    )
+    );
   }
 
-  
-
-
-
-    return (
+  return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
@@ -61,20 +118,32 @@ export default function TablaSolicitudUsuario({ solicitudes, onEdit, onDelete }:
         <TableBody>
           {solicitudes.map((solicitud) => (
             <TableRow key={solicitud.idSolicitudMSP}>
-              <TableCell className="font-medium">{solicitud.idSolicitudMSP}</TableCell>
-              <TableCell>{new Date(solicitud.fechaSolicitud).toLocaleDateString()}</TableCell>
-              <TableCell className="max-w-xs truncate">{solicitud.nombreEstablecimiento}</TableCell>
+              <TableCell className="font-medium">
+                {solicitud.idSolicitudMSP}
+              </TableCell>
+              <TableCell>
+                {new Date(solicitud.fechaSolicitud).toLocaleDateString()}
+              </TableCell>
+              <TableCell className="max-w-xs truncate">
+                {solicitud.nombreEstablecimiento}
+              </TableCell>
               <TableCell>
                 {solicitud.nombresDirector && solicitud.apellidosDirector
                   ? `${solicitud.nombresDirector} ${solicitud.apellidosDirector}`
                   : "N/A"}
               </TableCell>
-              <TableCell className="max-w-xs truncate">{solicitud.nombrePropietario || "N/A"}</TableCell>
+              <TableCell className="max-w-xs truncate">
+                {solicitud.nombrePropietario || "N/A"}
+              </TableCell>
               <TableCell>
                 <Badge variant="outline">{solicitud.tipoDeSolicitud}</Badge>
               </TableCell>
-              <TableCell>{getEstadoBadge(solicitud.estadoSolicitud)}</TableCell>
-              <TableCell>{solicitud.reciboPagoTasasNumero || "N/A"}</TableCell>
+              <TableCell>
+                {getEstadoBadge(solicitud.estadoSolicitud)}
+              </TableCell>
+              <TableCell>
+                {solicitud.reciboPagoTasasNumero || "N/A"}
+              </TableCell>
               <TableCell>
                 <div className="flex space-x-2 justify-center">
                   <div className="flex flex-col space-y-1">
@@ -87,7 +156,9 @@ export default function TablaSolicitudUsuario({ solicitudes, onEdit, onDelete }:
                       <span className="text-xs">Director</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <BooleanIcon value={solicitud.formularioImpresoOnlineConsultado} />
+                      <BooleanIcon
+                        value={solicitud.formularioImpresoOnlineConsultado}
+                      />
                       <span className="text-xs">Form. Online</span>
                     </div>
                   </div>
@@ -95,10 +166,18 @@ export default function TablaSolicitudUsuario({ solicitudes, onEdit, onDelete }:
               </TableCell>
               <TableCell>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => onEdit(solicitud)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(solicitud)}
+                  >
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => onDelete(solicitud.idSolicitudMSP)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(solicitud.idSolicitudMSP)}
+                  >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -108,5 +187,5 @@ export default function TablaSolicitudUsuario({ solicitudes, onEdit, onDelete }:
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
